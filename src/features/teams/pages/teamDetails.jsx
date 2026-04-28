@@ -62,6 +62,10 @@ export default function TeamDetail() {
     }
   };
 
+    const handleViewStats = (playerId) => {
+    navigate(`/players/${playerId}`);
+    };
+
   const cancelEdit = () => {
     setEditingId(null);
     reset();
@@ -156,26 +160,34 @@ export default function TeamDetail() {
             </div>
           ) : players?.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {players.map((player, index) => (
+                {players.map((player, index) => (
                 <div 
-                  key={player.id_player || `player-${index}`} 
-                  className="group relative flex items-center gap-5 p-5 bg-white rounded-3xl border border-gray-100 hover:border-green-200 hover:shadow-lg transition-all"
+                    key={player.id_player || `player-${index}`} 
+                    // 2. Agregamos el click a la tarjeta
+                    onClick={() => handleViewStats(player.id_player)}
+                    className="group relative flex items-center gap-5 p-5 bg-white rounded-3xl border border-gray-100 hover:border-green-200 hover:shadow-lg transition-all cursor-pointer"
                 >
-                  {/* Botones de Acción Flotantes */}
-                  <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+                    {/* Botones de Acción - IMPORTANTE: Usar e.stopPropagation() */}
+                    <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-20">
                     <button 
-                      onClick={() => handleEdit(player)}
-                      className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-600 hover:text-white transition-colors"
+                        onClick={(e) => {
+                        e.stopPropagation(); // Evita que se abra el perfil al intentar editar
+                        handleEdit(player);
+                        }}
+                        className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-600 hover:text-white transition-colors"
                     >
-                      <Pencil className="w-3.5 h-3.5" />
+                        <Pencil className="w-3.5 h-3.5" />
                     </button>
                     <button 
-                      onClick={() => handleDelete(player.id_player)}
-                      className="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-600 hover:text-white transition-colors"
+                        onClick={(e) => {
+                        e.stopPropagation(); // Evita que se abra el perfil al intentar eliminar
+                        handleDelete(player.id_player);
+                        }}
+                        className="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-600 hover:text-white transition-colors"
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
+                        <Trash2 className="w-3.5 h-3.5" />
                     </button>
-                  </div>
+                    </div>
 
                   <div className="relative flex-shrink-0">
                     <div className="w-20 h-20 rounded-2xl bg-green-50 flex items-center justify-center text-[#008000] border-2 border-white shadow-md overflow-hidden transition-transform group-hover:scale-105">
