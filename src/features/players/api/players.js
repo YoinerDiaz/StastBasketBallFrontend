@@ -35,3 +35,18 @@ export const getPlayersByTeam = async (id) => {
   const res = await client.get(`/players/team/${id}`);
   return res.data;
 };
+
+// GET /players/{id}/career-stats
+export const getPlayersCareerStats = async (id) => {
+  const res = await client.get(`/players/${id}/career-stats`);
+  return res.data
+};
+
+// GET /players/{id}/stats-history
+
+export const getPlayersStatsHistory = async(id, limit=10) => {
+  const res = await client.get(`/players/${id}/stats-history`, {
+    params: {limit}
+  });
+  return res.data
+};
