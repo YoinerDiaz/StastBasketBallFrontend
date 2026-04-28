@@ -2,7 +2,7 @@ import axios from "axios";
 
 const client = axios.create({
   // Usamos tu IP con el puerto del BACKEND
-  baseURL: "http://192.168.40.106:8000", 
+  baseURL: import.meta.env.VITE_API_URL, 
   headers: {
     "Content-Type": "application/json",
   },
