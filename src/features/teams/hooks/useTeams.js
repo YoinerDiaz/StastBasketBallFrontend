@@ -10,7 +10,7 @@ export function useTeams() {
 }
 export function useTeamById(id_team) {
   return useQuery({
-    queryKey: ["teamId"],
+    queryKey: ["teamId", id_team],
     queryFn: () => getTeam(id_team),
     staleTime: Infinity,
     enabled: !!id_team,

@@ -1,5 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import Teams from "./features/teams/pages/teams";
+import TeamsDetails from "./features/teams/pages/teamDetails";
 import Home from "./pages/home";
 import CreateGame from "./features/games/pages/CreateGame";
 import { ToastContainer } from 'react-toastify';
@@ -13,6 +14,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/teams" element={<Teams />} />
+        <Route path="/teams/:teamId" element={<TeamsDetails />} />
         <Route path="/games" element={<CreateGame />} />
       </Routes>
     </>
