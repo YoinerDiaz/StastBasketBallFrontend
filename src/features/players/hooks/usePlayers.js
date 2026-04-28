@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createPlayer, getPlayers, getPlayer, getPlayersByTeam, deletePlayer, updatePlayer } from "../api/players";
+import { createPlayer, getPlayers, getPlayer, getPlayersByTeam, deletePlayer, updatePlayer, getPlayersCareerStats, getPlayersStatsHistory } from "../api/players";
 import { useQuery } from "@tanstack/react-query";
 
 export function useCreatePlayer() {
@@ -31,12 +31,12 @@ export function usePlayersByTeam(id_team) {
 }
 export function usePlayerById(id_player) {
   return useQuery({
-    queryKey: ["id_player"],
+    queryKey: ["player", id_player], // 
     queryFn: () => getPlayer(id_player),
     staleTime: Infinity,
+    enabled: !!id_player, 
   });
 }
-
 
 export function useUpdatePlayer() {
   const queryClient = useQueryClient();
@@ -70,3 +70,21 @@ export function useDeletePlayer(){
     }
   });
 }
+
+export const usePlayerStats = (playerId) => {
+  // Hook para los totales (Tarjetas de info)
+  const career = useQuery({
+    queryKey: ["playerCareer", playerId],
+    queryFn: () => getPlayersCareerStats(playerId),
+    enabled: !!playerId,
+  });
+
+  // Hook para el historial (Gráficos)
+  const history = useQuery({
+    queryKey: ["playerHistory", playerId],
+    queryFn: () => getPlayersStatsHistory(playerId),
+    enabled: !!playerId,
+  });
+
+  return { career, history };
+};
