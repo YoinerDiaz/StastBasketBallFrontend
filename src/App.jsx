@@ -7,6 +7,7 @@ import CreateGame from "./features/games/pages/CreateGame";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import PlayerDetail from "./features/players/pages/playerDetail";
+import GameControl from './features/gameControl/pages/gameControl';
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
         <Route path="/players/:id" element={<PlayerDetail />} />
         <Route path="/games" element={<Game />} />
         <Route path="/games/createGame" element={<CreateGame />} />
+        <Route path="/game-control/:gameId" element={<GameControl />} />
       </Routes>
     </div>
   );
