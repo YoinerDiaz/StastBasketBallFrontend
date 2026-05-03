@@ -4,10 +4,12 @@ import { useTeams } from "../../teams/hooks/useTeams";
 import { usePlayersByTeam } from "../../players/hooks/usePlayers";
 import { useCreateGame } from "../hooks/useGames";
 import { toast } from 'react-toastify';
+import { useNavigate } from "react-router-dom";
 
 export default function CreateGame() {
     //Estados para cambio dinamico de vista del formulario
     const { search } = useLocation();
+    const navigate = useNavigate();
     const query = new URLSearchParams(search);
     const mode = query.get('mode'); // 'now' o 'schedule'
     const [isHeaderOpen, setIsHeaderOpen] = useState(true);
@@ -81,28 +83,37 @@ export default function CreateGame() {
 
     console.log("Enviando Payload:", gamePayload);
 
-    // 3. Ejecución de la mutación
-    createGame(gamePayload, {
-        onSuccess: (data) => {
-        toast.success("¡Partido creado y jugadores vinculados con éxito!");
-        console.log("Respuesta del servidor:", data);
-        
-        // Opcional: Redirigir al panel de control del partido creado
-        // navigate(`/game-control/${data.id_game}`);
-        },
-        onError: (err) => {
-        // Capturamos el detalle del error 422 para mostrarlo en consola
-        const serverDetails = err.response?.data?.detail;
-        console.error("Error detallado del servidor:", serverDetails);
+    // 3. Ejecución de la mutación (Tanstack Query / UseMutation)
+        createGame(gamePayload, {
+            onSuccess: (data) => {
+                // 'data' debería traer el ID del partido que acaba de crear tu FastAPI
+                const gameId = data.id_game || data.id; 
 
-        if (Array.isArray(serverDetails)) {
-            // Si el backend nos dice exactamente qué campo falló
-            toast.error(`Error de validación en: ${serverDetails[0].loc[1]}`);
-        } else {
-            toast.error("Hubo un problema al crear el partido. Revisa la consola.");
-        }
-        },
-    });
+                if (isNow) {
+                    toast.success("¡Partido iniciado! Redirigiendo al panel de control...");
+                    // Redirigimos a la pantalla de estadísticas en vivo
+                    // Asegúrate de que esta ruta esté definida en tu App.js
+                    // ✅ Correcto: URL limpia
+                    navigate(`/game-control/${gameId}`);
+                } else {
+                    toast.success("¡Programación guardada con éxito!");
+                    // Opcional: Limpiar formulario o redirigir a la lista de juegos
+                    // navigate('/scheduled-games');
+                }
+                
+                console.log("Respuesta del servidor:", data);
+            },
+            onError: (err) => {
+                const serverDetails = err.response?.data?.detail;
+                console.error("Error detallado del servidor:", serverDetails);
+
+                if (Array.isArray(serverDetails)) {
+                    toast.error(`Error de validación en: ${serverDetails[0].loc[1]}`);
+                } else {
+                    toast.error("Hubo un problema al crear el partido. Revisa la consola.");
+                }
+            },
+        });
     };
 
     useEffect(() => {
