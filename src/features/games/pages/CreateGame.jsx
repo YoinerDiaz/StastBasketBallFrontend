@@ -48,37 +48,61 @@ export default function CreateGame() {
     };
 
     const handleCreateGame = () => {
-        // Validaciones con Toastify
-        if (!date || !location.trim()) {
-            toast.error("Faltan datos: Ubicación y Fecha");
-            setIsHeaderOpen(true);
-            return;
-        }
-        if (selectedLocalPlayers.length < MIN_PLAYERS) {
-            toast.error(`El equipo local necesita al menos ${MIN_PLAYERS} jugadores`);
-            setStep("local");
-            return;
-        }
-        if (selectedVisitorPlayers.length < MIN_PLAYERS) {
-            toast.error(`El equipo visitante necesita al menos ${MIN_PLAYERS} jugadores`);
-            setStep("visitor");
-            return;
-        }
+    // 1. Validaciones iniciales
+    if (!location.trim()) {
+        toast.error("Por favor, ingresa una ubicación");
+        return;
+    }
 
-        createGame({
-            location,
-            date: new Date(date).toISOString(),
-            homeTeamId: selectedLocalTeam,
-            awayTeamId: selectedVisitorTeam,
-            homePlayers: selectedLocalPlayers,
-            awayPlayers: selectedVisitorPlayers,
-        }, {
-            onSuccess: () => toast.success("¡Partido creado correctamente!"),
-            onError: (err) => {
-                const msg = err?.response?.data?.detail;
-                toast.error(Array.isArray(msg) ? msg[0].msg : (msg || "Error al crear el juego"));
-            }
-        });
+    if (!selectedLocalTeam || !selectedVisitorTeam) {
+        toast.error("Debes seleccionar ambos equipos");
+        return;
+    }
+
+    if (selectedLocalTeam === selectedVisitorTeam) {
+        toast.error("El equipo local y el visitante no pueden ser el mismo");
+        return;
+    }
+
+    if (selectedLocalPlayers.length < 5 || selectedVisitorPlayers.length < 5) {
+        toast.error("Cada equipo debe tener al menos 5 jugadores seleccionados");
+        return;
+    }
+
+    // En CreateGame.jsx, dentro de handleCreateGame
+    const gamePayload = {
+        location: location.trim(),
+        date: new Date(date).toISOString().split('.')[0],
+        homeTeamId: Number(selectedLocalTeam),    // Coincide con el servicio
+        awayTeamId: Number(selectedVisitorTeam),  // Coincide con el servicio
+        homePlayers: selectedLocalPlayers.map(Number),
+        awayPlayers: selectedVisitorPlayers.map(Number),
+    };
+
+    console.log("Enviando Payload:", gamePayload);
+
+    // 3. Ejecución de la mutación
+    createGame(gamePayload, {
+        onSuccess: (data) => {
+        toast.success("¡Partido creado y jugadores vinculados con éxito!");
+        console.log("Respuesta del servidor:", data);
+        
+        // Opcional: Redirigir al panel de control del partido creado
+        // navigate(`/game-control/${data.id_game}`);
+        },
+        onError: (err) => {
+        // Capturamos el detalle del error 422 para mostrarlo en consola
+        const serverDetails = err.response?.data?.detail;
+        console.error("Error detallado del servidor:", serverDetails);
+
+        if (Array.isArray(serverDetails)) {
+            // Si el backend nos dice exactamente qué campo falló
+            toast.error(`Error de validación en: ${serverDetails[0].loc[1]}`);
+        } else {
+            toast.error("Hubo un problema al crear el partido. Revisa la consola.");
+        }
+        },
+    });
     };
 
     useEffect(() => {
@@ -285,7 +309,7 @@ export default function CreateGame() {
                 </div>
             </div>
 
-            <style jsx>{`
+            <style>{`
             .custom-scrollbar::-webkit-scrollbar { width: 4px; }
             .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
             .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
