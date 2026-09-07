@@ -9,14 +9,13 @@ const GameControl = () => {
     const { game, players, isLoading, error } = useGameData(gameId);
     const { formatTime, isActive, toggleTimer } = useGameTimer(10); 
 
-    // ✅ 1. MOVER LOS ESTADOS AL PRINCIPIO (Regla de Oro de Hooks)
+    // ✅ 1. ESTADOS AL PRINCIPIO
     const [homeStarters, setHomeStarters] = React.useState([]);
     const [awayStarters, setAwayStarters] = React.useState([]);
-    // Al principio de tu componente con los demás hooks
     const [isEditingHome, setIsEditingHome] = React.useState(false);
     const [isEditingAway, setIsEditingAway] = React.useState(false);
 
-    // ✅ 2. LOS USEMEMO TAMBIÉN ARRIBA
+    // ✅ 2. USEMEMO
     const homePlayers = useMemo(() => {
         if (!players || !game) return [];
         return players.filter(p => Number(p.fk_id_team) === Number(game.fk_home_id_team));
@@ -27,9 +26,8 @@ const GameControl = () => {
         return players.filter(p => Number(p.fk_id_team) === Number(game.fk_away_id_team));
     }, [players, game]);
 
-    // ✅ 3. LAS FUNCIONES DE APOYO
+    // ✅ 3. FUNCIONES DE APOYO
     const handleSelectStarter = (playerId, teamType) => {
-        // Validamos que el ID exista
         if (playerId === undefined || playerId === null) {
             console.error("Error: Se intentó seleccionar un jugador sin ID válido");
             return;
@@ -54,7 +52,7 @@ const GameControl = () => {
         console.log(`ACCIÓN: ${type} | ID_RELACIÓN: ${idRelation}`);
     };
 
-    // ✅ 4. FINALMENTE LOS RETURNS TEMPRANOS (Loading y Error)
+    // ✅ 4. RETURNS TEMPRANOS
     if (isLoading) return (
         <div className="flex items-center justify-center min-h-screen">
             <div className="text-xl font-black animate-pulse text-gray-500">CARGANDO ESTADÍSTICAS...</div>
@@ -68,14 +66,10 @@ const GameControl = () => {
         </div>
     );
 
-    console.log("CONTENIDO DE GAME:", game);
-    
-return (
-        /* CAMBIO 1: Eliminamos max-w-7xl y ajustamos el padding para que llegue a los bordes */
+    return (
         <div className="w-full px-2 md:px-6 bg-gray-50 min-h-screen">
             
             {/* CABECERA: MARCADOR EN VIVO */}
-            {/* CAMBIO 2: Eliminamos márgenes laterales innecesarios y redondeado si quieres que toque bordes */}
             <div className="flex flex-col md:flex-row justify-between items-center bg-gray-900 text-white p-8 rounded-b-[3rem] shadow-2xl mb-8 border-b-4 border-orange-500 gap-6 w-full">
                 
                 {/* Equipo Local */}
@@ -122,171 +116,173 @@ return (
                 </div>
             </div>
 
-{/* SECCIÓN DE TABLAS */}
-<div className="grid grid-cols-1 xl:grid-cols-2 gap-4 pb-10">
-    
-    {/* Tabla Local */}
-    <div className={`bg-white rounded-3xl shadow-xl border transition-all ${isEditingHome ? 'border-blue-500 ring-2 ring-blue-200' : 'border-gray-200'} overflow-hidden`}>
-        <div className="bg-blue-600 p-5 text-white font-black flex justify-between items-center">
-            <div className="flex flex-col">
-                <span className="text-[10px] opacity-70 uppercase tracking-widest">Nómina Oficial</span>
-                <span className="text-xl uppercase">{game?.home_team?.name || "Local"}</span>
-            </div>
-            
-            <button 
-                onClick={() => setIsEditingHome(!isEditingHome)}
-                className={`px-4 py-2 rounded-xl text-xs uppercase transition-all shadow-lg ${
-                    isEditingHome ? 'bg-white text-blue-600' : 'bg-blue-800 text-white hover:bg-blue-700'
-                }`}
-            >
-                {isEditingHome ? '✅ Finalizar' : '📋 Seleccionar Titulares'}
-            </button>
-        </div>
-
-        <div className="overflow-x-auto">
-            <table className="w-full text-left">
-                <thead className="bg-gray-100 text-xs uppercase text-gray-500 border-b font-bold">
-                    <tr>
-                        <th className="p-5 text-center">#</th>
-                        <th className="p-5">Jugador</th>
-                        <th className="p-5 text-center">Acciones</th>
-                        <th className="p-5 text-center">PTS</th>
-                        <th className="p-5 text-center">F</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {homePlayers.map(p => {
-                        // ✅ CAMBIO CLAVE: Usamos fk_id_player que es el que viene en tu JSON
-                        const currentId = p.fk_id_player; 
-                        const isStarter = homeStarters.includes(currentId);
+            {/* SECCIÓN DE TABLAS */}
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 pb-10">
+                
+                {/* Tabla Local */}
+                <div className={`bg-white rounded-3xl shadow-xl border transition-all ${isEditingHome ? 'border-blue-500 ring-2 ring-blue-200' : 'border-gray-200'} overflow-hidden`}>
+                    <div className="bg-blue-600 p-5 text-white font-black flex justify-between items-center">
+                        <div className="flex flex-col">
+                            <span className="text-[10px] opacity-70 uppercase tracking-widest">Nómina Oficial</span>
+                            <span className="text-xl uppercase">{game?.home_team?.name || "Local"}</span>
+                        </div>
                         
-                        return (
-                            <tr 
-                                key={p.id_game_player} 
-                                onClick={() => isEditingHome && handleSelectStarter(currentId, 'home')}
-                                className={`border-b transition-all ${
-                                    isEditingHome ? 'cursor-pointer hover:bg-blue-50' : 'cursor-default'
-                                } ${
-                                    isStarter 
-                                    ? 'bg-blue-50/50 border-l-4 border-l-blue-600 opacity-100' 
-                                    : isEditingHome ? 'opacity-100' : 'opacity-40'
-                                }`}
-                            >
-                                <td className="p-5 text-center font-bold">{p.player?.number}</td>
-                                <td className="p-5">
-                                    <div className="flex flex-col">
-                                        <span className={`font-black uppercase ${isStarter ? 'text-blue-900' : ''}`}>
-                                            {p.player?.name}
-                                        </span>
-                                        <span className="text-[10px] text-gray-400 font-bold uppercase">
-                                            {isStarter ? '🏀 Titular' : 'Banca'}
-                                        </span>
-                                    </div>
-                                </td>
-                                <td className="p-5 text-center">
-                                    {(isStarter && !isEditingHome) && (
-                                        <div className="flex gap-2 justify-center" onClick={(e) => e.stopPropagation()}>
-                                            <button onClick={() => handleAction(p.id_game_player, 'point')} className="bg-blue-600 text-white px-3 py-1 rounded-lg text-xs font-bold shadow-md">+</button>
-                                            <button onClick={() => handleAction(p.id_game_player, 'foul')} className="bg-red-500 text-white px-3 py-1 rounded-lg text-xs font-bold shadow-md">F</button>
-                                        </div>
-                                    )}
-                                    {isEditingHome && (
-                                        <div className={`w-5 h-5 rounded-full mx-auto border-2 ${isStarter ? 'bg-blue-600 border-blue-600' : 'border-gray-300'}`}>
-                                            {isStarter && <span className="text-white text-[10px] flex items-center justify-center">✓</span>}
-                                        </div>
-                                    )}
-                                </td>
-                                <td className="p-5 text-center font-black">{p.points || 0}</td>
-                                <td className="p-5 text-center font-black text-red-500">{p.fouls || 0}</td>
-                            </tr>
-                        );
-                    })}
-                </tbody>
-            </table>
-        </div>
-    </div>
+                        <button 
+                            onClick={() => setIsEditingHome(!isEditingHome)}
+                            className={`px-4 py-2 rounded-xl text-xs uppercase transition-all shadow-lg ${
+                                isEditingHome ? 'bg-white text-blue-600' : 'bg-blue-800 text-white hover:bg-blue-700'
+                            }`}
+                        >
+                            {isEditingHome ? '✅ Finalizar' : '📋 Seleccionar Titulares'}
+                        </button>
+                    </div>
 
-    {/* Tabla Visitante */}
-    <div className={`bg-white rounded-3xl shadow-xl border transition-all ${isEditingAway ? 'border-red-500 ring-2 ring-red-200' : 'border-gray-200'} overflow-hidden`}>
-        <div className="bg-red-600 p-5 text-white font-black flex justify-between items-center">
-            <div className="flex flex-col">
-                <span className="text-[10px] opacity-70 uppercase tracking-widest">Nómina Oficial</span>
-                <span className="text-xl uppercase">{game?.away_team?.name || "Visitante"}</span>
-            </div>
-            
-            <button 
-                onClick={() => setIsEditingAway(!isEditingAway)}
-                className={`px-4 py-2 rounded-xl text-xs uppercase transition-all shadow-lg ${
-                    isEditingAway ? 'bg-white text-red-600' : 'bg-red-800 text-white hover:bg-red-700'
-                }`}
-            >
-                {isEditingAway ? '✅ Finalizar' : '📋 Seleccionar Titulares'}
-            </button>
-        </div>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse">
+                            <thead className="bg-gray-100 text-xs uppercase text-gray-500 border-b font-bold">
+                                <tr>
+                                    <th className="p-5 text-center">#</th>
+                                    <th className="p-5">Jugador</th>
+                                    <th className="p-5 text-center">Acciones</th>
+                                    <th className="p-5 text-center">PTS</th>
+                                    <th className="p-5 text-center">F</th>
+                                </tr>
+                            </thead>
+                            
+                            {/* MODO MODO REGLA MODO EDITAR / PlayerRow */}
+                            <tbody>
+                                {isEditingHome ? (
+                                    homePlayers.map(p => {
+                                        const currentId = p.fk_id_player;
+                                        const isStarter = homeStarters.includes(currentId);
+                                        return (
+                                            <tr 
+                                                key={p.id_game_player} 
+                                                onClick={() => handleSelectStarter(currentId, 'home')}
+                                                className={`border-b transition-all cursor-pointer hover:bg-blue-50 ${
+                                                    isStarter ? 'bg-blue-50/50 border-l-4 border-l-blue-600' : 'opacity-100'
+                                                }`}
+                                            >
+                                                <td className="p-5 text-center font-bold">{p.player?.number}</td>
+                                                <td className="p-5">
+                                                    <div className="flex flex-col">
+                                                        <span className={`font-black uppercase ${isStarter ? 'text-blue-900' : ''}`}>
+                                                            {p.player?.name}
+                                                        </span>
+                                                        <span className="text-[10px] text-gray-400 font-bold uppercase">
+                                                            {isStarter ? '🏀 Titular' : 'Banca'}
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td className="p-5 text-center">
+                                                    <div className={`w-5 h-5 rounded-full mx-auto border-2 ${isStarter ? 'bg-blue-600 border-blue-600' : 'border-gray-300'}`}>
+                                                        {isStarter && <span className="text-white text-[10px] flex items-center justify-center">✓</span>}
+                                                    </div>
+                                                </td>
+                                                <td className="p-5 text-center font-black">{p.points || 0}</td>
+                                                <td className="p-5 text-center font-black text-red-500">{p.fouls || 0}</td>
+                                            </tr>
+                                        );
+                                    })
+                                ) : (
+                                    homePlayers.map(p => (
+                                        <PlayerRow 
+                                            key={p.id_game_player} 
+                                            player={{
+                                                ...p,
+                                                is_on_court: homeStarters.includes(p.fk_id_player)
+                                            }} 
+                                            onAction={handleAction} 
+                                        />
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
 
-        <div className="overflow-x-auto">
-            <table className="w-full text-left">
-                <thead className="bg-gray-100 text-xs uppercase text-gray-500 border-b font-bold">
-                    <tr>
-                        <th className="p-5 text-center">#</th>
-                        <th className="p-5">Jugador</th>
-                        <th className="p-5 text-center">Acciones</th>
-                        <th className="p-5 text-center">PTS</th>
-                        <th className="p-5 text-center">F</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {awayPlayers.map(p => {
-                        // ✅ MISMO CAMBIO: fk_id_player
-                        const currentId = p.fk_id_player;
-                        const isStarter = awayStarters.includes(currentId);
+                {/* Tabla Visitante */}
+                <div className={`bg-white rounded-3xl shadow-xl border transition-all ${isEditingAway ? 'border-red-500 ring-2 ring-red-200' : 'border-gray-200'} overflow-hidden`}>
+                    <div className="bg-red-600 p-5 text-white font-black flex justify-between items-center">
+                        <div className="flex flex-col">
+                            <span className="text-[10px] opacity-70 uppercase tracking-widest">Nómina Oficial</span>
+                            <span className="text-xl uppercase">{game?.away_team?.name || "Visitante"}</span>
+                        </div>
                         
-                        return (
-                            <tr 
-                                key={p.id_game_player} 
-                                onClick={() => isEditingAway && handleSelectStarter(currentId, 'away')}
-                                className={`border-b transition-all ${
-                                    isEditingAway ? 'cursor-pointer hover:bg-red-50' : 'cursor-default'
-                                } ${
-                                    isStarter 
-                                    ? 'bg-red-50/50 border-l-4 border-l-red-600 opacity-100' 
-                                    : isEditingAway ? 'opacity-100' : 'opacity-40'
-                                }`}
-                            >
-                                <td className="p-5 text-center font-bold">{p.player?.number}</td>
-                                <td className="p-5">
-                                    <div className="flex flex-col">
-                                        <span className={`font-black uppercase ${isStarter ? 'text-red-900' : ''}`}>
-                                            {p.player?.name}
-                                        </span>
-                                        <span className="text-[10px] text-gray-400 font-bold uppercase">
-                                            {isStarter ? '🏀 Titular' : 'Banca'}
-                                        </span>
-                                    </div>
-                                </td>
-                                <td className="p-5 text-center">
-                                    {(isStarter && !isEditingAway) && (
-                                        <div className="flex gap-2 justify-center" onClick={(e) => e.stopPropagation()}>
-                                            <button onClick={() => handleAction(p.id_game_player, 'point')} className="bg-blue-600 text-white px-3 py-1 rounded-lg text-xs font-bold shadow-md">+</button>
-                                            <button onClick={() => handleAction(p.id_game_player, 'foul')} className="bg-red-500 text-white px-3 py-1 rounded-lg text-xs font-bold shadow-md">F</button>
-                                        </div>
-                                    )}
-                                    {isEditingAway && (
-                                        <div className={`w-5 h-5 rounded-full mx-auto border-2 ${isStarter ? 'bg-red-600 border-red-600' : 'border-gray-300'}`}>
-                                            {isStarter && <span className="text-white text-[10px] flex items-center justify-center">✓</span>}
-                                        </div>
-                                    )}
-                                </td>
-                                <td className="p-5 text-center font-black">{p.points || 0}</td>
-                                <td className="p-5 text-center font-black text-red-500">{p.fouls || 0}</td>
-                            </tr>
-                        );
-                    })}
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
+                        <button 
+                            onClick={() => setIsEditingAway(!isEditingAway)}
+                            className={`px-4 py-2 rounded-xl text-xs uppercase transition-all shadow-lg ${
+                                isEditingAway ? 'bg-white text-red-600' : 'bg-red-800 text-white hover:bg-red-700'
+                            }`}
+                        >
+                            {isEditingAway ? '✅ Finalizar' : '📋 Seleccionar Titulares'}
+                        </button>
+                    </div>
+
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse">
+                            <thead className="bg-gray-100 text-xs uppercase text-gray-500 border-b font-bold">
+                                <tr>
+                                    <th className="p-5 text-center">#</th>
+                                    <th className="p-5">Jugador</th>
+                                    <th className="p-5 text-center">Acciones</th>
+                                    <th className="p-5 text-center">PTS</th>
+                                    <th className="p-5 text-center">F</th>
+                                </tr>
+                            </thead>
+                            
+                            <tbody>
+                                {isEditingAway ? (
+                                    awayPlayers.map(p => {
+                                        const currentId = p.fk_id_player;
+                                        const isStarter = awayStarters.includes(currentId);
+                                        return (
+                                            <tr 
+                                                key={p.id_game_player} 
+                                                onClick={() => handleSelectStarter(currentId, 'away')}
+                                                className={`border-b transition-all cursor-pointer hover:bg-red-50 ${
+                                                    isStarter ? 'bg-red-50/50 border-l-4 border-l-red-600' : 'opacity-100'
+                                                }`}
+                                            >
+                                                <td className="p-5 text-center font-bold">{p.player?.number}</td>
+                                                <td className="p-5">
+                                                    <div className="flex flex-col">
+                                                        <span className={`font-black uppercase ${isStarter ? 'text-red-900' : ''}`}>
+                                                            {p.player?.name}
+                                                        </span>
+                                                        <span className="text-[10px] text-gray-400 font-bold uppercase">
+                                                            {isStarter ? '🏀 Titular' : 'Banca'}
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td className="p-5 text-center">
+                                                    <div className={`w-5 h-5 rounded-full mx-auto border-2 ${isStarter ? 'bg-red-600 border-red-600' : 'border-gray-300'}`}>
+                                                        {isStarter && <span className="text-white text-[10px] flex items-center justify-center">✓</span>}
+                                                    </div>
+                                                </td>
+                                                <td className="p-5 text-center font-black">{p.points || 0}</td>
+                                                <td className="p-5 text-center font-black text-red-500">{p.fouls || 0}</td>
+                                            </tr>
+                                        );
+                                    })
+                                ) : (
+                                    awayPlayers.map(p => (
+                                        <PlayerRow 
+                                            key={p.id_game_player} 
+                                            player={{
+                                                ...p,
+                                                is_on_court: awayStarters.includes(p.fk_id_player)
+                                            }} 
+                                            onAction={handleAction} 
+                                        />
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
         </div>
     );
 };

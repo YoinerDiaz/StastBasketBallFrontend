@@ -38,7 +38,7 @@ const PlayerRow = ({ player, onAction }) => {
             <td className="p-4">
                 <div className="flex flex-wrap gap-2">
                     <button 
-                        onClick={() => onAction(player.id_game_player, '1pt')}
+                        onClick={() => onAction(player.id_game_player, 'FREE_THROW_MADE')}
                         className="px-2 py-1 bg-gray-100 hover:bg-green-500 hover:text-white rounded text-[10px] font-bold transition-colors"
                     >
                         1PT
