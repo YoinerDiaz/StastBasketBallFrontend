@@ -1,8 +1,7 @@
 import { X, Users, Plus } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useTeamById } from "../hooks/useTeams";
-import { useCreatePlayer } from "../../players/hooks/usePlayers";
-import { usePlayersByTeam } from "../../players/hooks/usePlayersByTeam";
+import { useCreatePlayer, usePlayersByTeam } from "../../players/hooks/usePlayers";
 import { useUpdateTeam } from "../hooks/useUpdateTeam";
 import { useForm } from "react-hook-form";
 
@@ -16,16 +15,19 @@ export default function TeamModal({ onClose, teamId }) {
     const { register, handleSubmit, reset } = useForm();
 
     useEffect(() => {
-        if (team?.name) {
+        if (!team?.name) return;
+
+        // Evita setState directo en el cuerpo del effect
+        queueMicrotask(() => {
             setTeamName(team.name);
-        }
-    }, [team]);
+        });
+    }, [team?.name]);
 
     const onSubmit = (data) => {
         createPlayer.mutate(
             {
                 name: data.name,
-                number: Number(data.number),
+                number: String(data.number),
                 fk_id_team: teamId,
             },
             {
@@ -77,7 +79,7 @@ export default function TeamModal({ onClose, teamId }) {
                         <div className="space-y-2">
                             {players.map((p) => (
                                 <div
-                                    key={p.id}
+                                    key={p.id_player || p.id}
                                     className="flex justify-between items-center bg-gray-50 px-3 py-2 rounded-xl"
                                 >
                                     <span>{p.name}</span>
@@ -101,9 +103,9 @@ export default function TeamModal({ onClose, teamId }) {
                     />
 
                     <input
-                        type="number"
-                        {...register("number", { required: true, valueAsNumber: true })}
-                        placeholder="Número"
+                        type="text"
+                        {...register("number", { required: true })}
+                        placeholder="Número (ej: 00)"
                         className="w-full px-3 py-2 border rounded-xl"
                     />
 

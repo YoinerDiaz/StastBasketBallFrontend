@@ -7,7 +7,7 @@ export function useCreateTeam() {
   return useMutation({
     mutationFn: createTeam,
     onSuccess: () => {
-      queryClient.invalidateQueries(["teams"]);
+      queryClient.invalidateQueries({ queryKey: ["teams"] });
     },
   });
 }

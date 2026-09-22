@@ -72,9 +72,19 @@ export default function CreateGame() {
     }
 
     // En CreateGame.jsx, dentro de handleCreateGame
+    // Convertir fecha local a ISO sin cambiar la hora (evitar UTC shift)
+    const localDate = new Date(date);
+    const year = localDate.getFullYear();
+    const month = String(localDate.getMonth() + 1).padStart(2, '0');
+    const day = String(localDate.getDate()).padStart(2, '0');
+    const hours = String(localDate.getHours()).padStart(2, '0');
+    const minutes = String(localDate.getMinutes()).padStart(2, '0');
+    const seconds = String(localDate.getSeconds()).padStart(2, '0');
+    const localISOString = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+
     const gamePayload = {
         location: location.trim(),
-        date: new Date(date).toISOString().split('.')[0],
+        date: localISOString,
         homeTeamId: Number(selectedLocalTeam),    // Coincide con el servicio
         awayTeamId: Number(selectedVisitorTeam),  // Coincide con el servicio
         homePlayers: selectedLocalPlayers.map(Number),
@@ -119,8 +129,13 @@ export default function CreateGame() {
     useEffect(() => {
         if (mode === 'now') {
             const today = new Date();
-            // Formato requerido por datetime-local: YYYY-MM-DDTHH:mm
-            const formattedDate = today.toISOString().slice(0, 16);
+            // Formato requerido por datetime-local: YYYY-MM-DDTHH:mm (hora local)
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            const hours = String(today.getHours()).padStart(2, '0');
+            const minutes = String(today.getMinutes()).padStart(2, '0');
+            const formattedDate = `${year}-${month}-${day}T${hours}:${minutes}`;
             setDate(formattedDate);
             setIsNow(true);
             setIsHeaderOpen(false); // Cerramos el header porque ya está pre-configurado
@@ -129,19 +144,36 @@ export default function CreateGame() {
             setIsHeaderOpen(true);
         }
     }, [mode]);
+    const handleCancel = () => {
+        if (window.confirm("¿Estás seguro de que deseas cancelar? Se perderán todos los datos ingresados.")) {
+            navigate("/games");
+        }
+    };
+
     return (
         <div className="max-w-4xl mx-auto bg-gray-50 min-h-screen pb-32 font-sans">
 
             {/* CABECERA DINÁMICA */}
             <div className="bg-white border-b sticky top-0 z-30 shadow-sm">
                 <div className="p-5 flex justify-between items-center">
-                    <div className="flex flex-col">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-green-600">
-                            {isNow ? "Partido en Vivo" : "Programación de Encuentro"}
-                        </span>
-                        <h1 className="text-sm font-bold text-gray-800">
-                            {isNow ? "Iniciando juego rápido" : "Configura los detalles"}
-                        </h1>
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={handleCancel}
+                            className="p-2 hover:bg-gray-100 rounded-xl transition-colors text-gray-400 hover:text-gray-600 -ml-2"
+                            title="Volver atrás"
+                        >
+                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+                            </svg>
+                        </button>
+                        <div className="flex flex-col">
+                            <span className="text-[10px] font-black uppercase tracking-widest text-green-600">
+                                {isNow ? "Partido en Vivo" : "Programación de Encuentro"}
+                            </span>
+                            <h1 className="text-sm font-bold text-gray-800">
+                                {isNow ? "Iniciando juego rápido" : "Configura los detalles"}
+                            </h1>
+                        </div>
                     </div>
                     {!isNow && (
                         <button
@@ -310,12 +342,20 @@ export default function CreateGame() {
 
             {/* BOTÓN DE ACCIÓN FIJO */}
             <div className="fixed bottom-0 left-0 right-0 p-6 bg-white/90 backdrop-blur-xl border-t border-gray-100 z-40">
-                <div className="max-w-4xl mx-auto">
+                <div className="max-w-4xl mx-auto flex flex-col gap-3">
                     <button
                         onClick={handleCreateGame}
-                        className="w-full bg-green-600 hover:bg-green-700 text-white font-black py-5 rounded-[2rem] shadow-xl shadow-green-200 active:scale-95 text-sm uppercase tracking-widest transition-all"
+                        disabled={creatingGame}
+                        className="w-full bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white font-black py-5 rounded-[2rem] shadow-xl shadow-green-200 active:scale-95 text-sm uppercase tracking-widest transition-all"
                     >
-                        {isNow ? "¡COMENZAR PARTIDO!" : "GUARDAR PROGRAMACIÓN"}
+                        {creatingGame ? "GUARDANDO..." : (isNow ? "¡COMENZAR PARTIDO!" : "GUARDAR PROGRAMACIÓN")}
+                    </button>
+                    <button
+                        onClick={handleCancel}
+                        disabled={creatingGame}
+                        className="w-full bg-gray-100 hover:bg-gray-200 disabled:bg-gray-50 text-gray-600 font-bold py-3 rounded-2xl active:scale-95 text-sm transition-all"
+                    >
+                        Cancelar
                     </button>
                 </div>
             </div>

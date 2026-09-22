@@ -1,6 +1,16 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createPlayer, getPlayers, getPlayer, getPlayersByTeam, deletePlayer, updatePlayer, getPlayersCareerStats, getPlayersStatsHistory } from "../api/players";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
+import { toast } from "react-toastify";
+
+import { 
+  createPlayer, 
+  getPlayers, 
+  getPlayer, 
+  getPlayersByTeam, 
+  deletePlayer, 
+  updatePlayer, 
+  getPlayersCareerStats, 
+  getPlayersStatsHistory 
+} from "../api/players";
 
 export function useCreatePlayer() {
   const queryClient = useQueryClient();
@@ -8,7 +18,7 @@ export function useCreatePlayer() {
   return useMutation({
     mutationFn: createPlayer,
     onSuccess: () => {
-      queryClient.invalidateQueries(["players"]);
+      queryClient.invalidateQueries({ queryKey: ["players"] });
     },
   });
 }
@@ -17,23 +27,24 @@ export function usePlayers() {
   return useQuery({
     queryKey: ["players"],
     queryFn: getPlayers,
-    staleTime: Infinity,
+    staleTime: 1000 * 60 * 5, // 5 minutos
   });
 }
 
 export function usePlayersByTeam(id_team) {
   return useQuery({
-    queryKey: ["players", id_team],
+    queryKey: ["players", "team", id_team],
     queryFn: () => getPlayersByTeam(id_team),
-    staleTime: Infinity,
+    staleTime: 1000 * 60 * 5,
     enabled: !!id_team,
   });
 }
+
 export function usePlayerById(id_player) {
   return useQuery({
-    queryKey: ["player", id_player], // 
+    queryKey: ["player", id_player],
     queryFn: () => getPlayer(id_player),
-    staleTime: Infinity,
+    staleTime: 1000 * 60 * 5,
     enabled: !!id_player, 
   });
 }
@@ -42,12 +53,12 @@ export function useUpdatePlayer() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    // Recibe un objeto que contenga id_player y los nuevos datos
     mutationFn: ({ id_player, ...data }) => updatePlayer(id_player, data),
-    onSuccess: () => {
-      // Invalidamos las listas para que se refresquen los datos
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["players"] });
-      console.log("Jugador actualizado con éxito");
+      if (variables.id_player) {
+        queryClient.invalidateQueries({ queryKey: ["player", variables.id_player] });
+      }
     },
     onError: (error) => {
       console.error("Error al actualizar jugador:", error.response?.data || error.message);
@@ -55,31 +66,30 @@ export function useUpdatePlayer() {
   });
 }
 
-
-export function useDeletePlayer(){
+export function useDeletePlayer() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (id_player) => deletePlayer(id_player),
-    onSuccess: () =>{
-      queryClient.invalidateQueries({queryKey:["players"]});
-      console.log("Jugador Eliminado");
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["players"] });
+      toast.success("Jugador eliminado correctamente");
     },
-    onError:(error) =>{
-      console.log("Error al eliminar jugador:" , error.response?.data || error.message);
+    onError: (error) => {
+      const errorMsg = error.response?.data?.detail || "Error al eliminar jugador";
+      console.error("Error al eliminar jugador:", errorMsg);
+      toast.error(errorMsg);
     }
   });
 }
 
 export const usePlayerStats = (playerId) => {
-  // Hook para los totales (Tarjetas de info)
   const career = useQuery({
     queryKey: ["playerCareer", playerId],
     queryFn: () => getPlayersCareerStats(playerId),
     enabled: !!playerId,
   });
 
-  // Hook para el historial (Gráficos)
   const history = useQuery({
     queryKey: ["playerHistory", playerId],
     queryFn: () => getPlayersStatsHistory(playerId),

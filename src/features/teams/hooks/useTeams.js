@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getTeams, getTeam } from "../api/teams";
 
 export function useTeams() {
@@ -8,6 +8,7 @@ export function useTeams() {
     staleTime: Infinity,
   });
 }
+
 export function useTeamById(id_team) {
   return useQuery({
     queryKey: ["teamId", id_team],

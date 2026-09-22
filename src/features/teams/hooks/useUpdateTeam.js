@@ -6,9 +6,11 @@ export function useUpdateTeam() {
 
   return useMutation({
     mutationFn: ({ id, data }) => updateTeam(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries(["teams"]);
-      queryClient.invalidateQueries(["teamId"]);
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["teams"] });
+      if (variables.id) {
+        queryClient.invalidateQueries({ queryKey: ["teamId", variables.id] });
+      }
     },
   });
 }

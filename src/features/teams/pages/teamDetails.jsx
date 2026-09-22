@@ -29,7 +29,7 @@ export default function TeamDetail() {
   const onSubmit = (data) => {
     const playerData = {
       name: data.name,
-      number: data.number ? parseInt(data.number, 10) : 0, 
+      number: data.number ? String(data.number) : "0", 
       fk_id_team: parseInt(teamId, 10)
     };
 
