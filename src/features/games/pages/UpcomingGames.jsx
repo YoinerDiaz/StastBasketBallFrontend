@@ -1,8 +1,8 @@
-import { useState, useMemo, useEffect } from "react";
+import { ArrowLeft, Calendar, Clock, FileText, Filter, Gamepad, MapPin, Play, Plus, Search, Shield, Trophy } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Gamepad, Plus, Play, Calendar, Clock, Trophy, MapPin, Search, Filter, Shield } from "lucide-react";
-import { useGames } from "../hooks/useGames";
 import { supabase } from "../../../api/supabaseClient";
+import { useGames } from "../hooks/useGames";
 
 const STATUS_CONFIG = {
   in_progress: { label: "En Vivo",    bg: "bg-red-50",    text: "text-red-600",   dot: "bg-red-500",   pulse: true  },
@@ -312,10 +312,19 @@ export default function UpcomingGames() {
 function GameCard({ game, navigate }) {
   const cfg = getStatusCfg(game.status);
   const isLive = game.status === "in_progress";
+  const isFinished = game.status === "finished";
+
+  const handleCardClick = () => {
+    if (isFinished) {
+      navigate(`/game-summary/${game.id_game}`);
+    } else {
+      navigate(`/game-control/${game.id_game}`);
+    }
+  };
 
   return (
     <div
-      onClick={() => navigate(`/game-control/${game.id_game}`)}
+      onClick={handleCardClick}
       className="group bg-white rounded-[2.5rem] border border-slate-200 shadow-sm hover:shadow-2xl hover:border-[#F26513]/30 transition-all duration-300 cursor-pointer overflow-hidden flex flex-col justify-between"
     >
       <div className="p-7 flex-1 flex flex-col space-y-5">
@@ -354,7 +363,7 @@ function GameCard({ game, navigate }) {
             </div>
 
             <div className="flex flex-col items-center gap-1 min-w-[60px]">
-              {isLive || game.status === "finished" ? (
+              {isLive || isFinished ? (
                 <div className="flex items-center gap-2 bg-slate-950 text-white px-3 py-1.5 rounded-xl font-black text-sm shadow-inner">
                   <span>{game.home_score}</span>
                   <span className="opacity-30 text-[10px]">-</span>
@@ -378,7 +387,7 @@ function GameCard({ game, navigate }) {
         </div>
 
         {/* Footer Info */}
-        <div className="pt-4 border-t border-slate-50 flex items-center justify-between">
+        <div className="pt-4 border-t border-slate-50 flex items-center justify-between gap-2">
           <div className="flex items-center gap-3 text-slate-400">
             <div className="flex items-center gap-1.5">
               <Clock className="w-3.5 h-3.5" />
@@ -396,9 +405,24 @@ function GameCard({ game, navigate }) {
             )}
           </div>
 
-          <div className="text-[#F26513] font-black text-[10px] uppercase tracking-widest flex items-center gap-1 group-hover:gap-2 transition-all">
-            GESTIONAR <Plus className="w-3 h-3 stroke-[3]" />
-          </div>
+          {/* Botón de Acción según el estado */}
+          {isFinished ? (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/game-summary/${game.id_game}`);
+              }}
+              className="px-3.5 py-1.5 rounded-xl bg-[#01050D] hover:bg-[#F26513] text-white font-black text-[10px] uppercase tracking-wider flex items-center gap-1.5 shadow-md shadow-black/10 transition-all duration-200"
+            >
+              <FileText className="w-3.5 h-3.5 text-[#F26513] group-hover:text-white transition-colors" />
+              <span>Resumen</span>
+            </button>
+          ) : (
+            <div className="text-[#F26513] font-black text-[10px] uppercase tracking-widest flex items-center gap-1 group-hover:gap-2 transition-all">
+              GESTIONAR <Plus className="w-3 h-3 stroke-[3]" />
+            </div>
+          )}
         </div>
 
       </div>
