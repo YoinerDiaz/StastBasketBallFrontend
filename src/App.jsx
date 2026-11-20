@@ -1,18 +1,24 @@
 import { useEffect, useState } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 import { supabase } from "./api/supabaseClient";
 
-import Home from "./pages/home";
-import Teams from "./features/teams/pages/teams";
+import UpcomingGames from "./features/games/pages/UpcomingGames";
 import TeamsDetails from "./features/teams/pages/teamDetails";
-import Game from "./features/games/pages/game";
+import Teams from "./features/teams/pages/teams";
+import Home from "./pages/home";
+import CreateTournamentWizard from "./pages/CreateTournamentWizard";
+import TournamentsList from "./pages/TournamentsList";
+import TournamentDetail from "./pages/TournamentDetail";
+
+import GameControl from './features/gameControl/pages/gameControl';
 import CreateGame from "./features/games/pages/CreateGame";
 import PlayerDetail from "./features/players/pages/playerDetail";
-import GameControl from './features/gameControl/pages/gameControl';
+// IMPORTANTE: Asegúrate de ajustar esta ruta al archivo real de tu GameSummary
 import Login from './components/login';
+import GameSummary from './features/games/pages/GameSummary';
 
 function App() {
   const [session, setSession] = useState(null);
@@ -43,17 +49,17 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="relative min-h-screen bg-gray-50">
       <ToastContainer position="top-center" autoClose={3000} />
       
       <Routes>
-        {/* Ruta pública: Si ya hay sesión activa, manda al Home */}
+        {/* Ruta pública */}
         <Route 
           path="/login" 
           element={!session ? <Login /> : <Navigate to="/" replace />} 
         />
 
-        {/* Rutas privadas: Si no hay sesión, fuerza la redirección a /login */}
+        {/* Rutas privadas */}
         <Route 
           path="/" 
           element={session ? <Home /> : <Navigate to="/login" replace />} 
@@ -72,7 +78,7 @@ function App() {
         />
         <Route 
           path="/games" 
-          element={session ? <Game /> : <Navigate to="/login" replace />} 
+          element={session ? <UpcomingGames /> : <Navigate to="/login" replace />} 
         />
         <Route 
           path="/games/createGame" 
@@ -81,6 +87,23 @@ function App() {
         <Route 
           path="/game-control/:gameId" 
           element={session ? <GameControl /> : <Navigate to="/login" replace />} 
+        />
+        {/* RUTA AÑADIDA */}
+        <Route 
+          path="/game-summary/:gameId" 
+          element={session ? <GameSummary /> : <Navigate to="/login" replace />} 
+        />
+        <Route 
+          path="/tournaments/create" 
+          element={session ? <CreateTournamentWizard /> : <Navigate to="/login" replace />} 
+        />
+        <Route 
+          path="/tournaments" 
+          element={session ? <TournamentsList /> : <Navigate to="/login" replace />} 
+        />
+        <Route 
+          path="/tournaments/:id" 
+          element={session ? <TournamentDetail /> : <Navigate to="/login" replace />} 
         />
       </Routes>
     </div>

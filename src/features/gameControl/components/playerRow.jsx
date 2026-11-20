@@ -1,19 +1,13 @@
-import React from 'react';
 
 const PlayerRow = ({ player, onAction }) => {
-    // 1. Accedemos al objeto anidado donde está el nombre y el número
-    // Según tu JSON, 'player' es el objeto que recibimos por props,
-    // y dentro tiene una propiedad llamada 'player' con la data básica.
     const infoBasica = player.player; 
 
-    // 2. Extraemos los valores con nombres exactos de tu JSON
     const playerName = infoBasica?.name || "Sin Nombre";
     const playerNumber = infoBasica?.number !== undefined ? infoBasica.number : "??";
 
-    // 3. Estilos dinámicos según si está en cancha (opcional)
     const rowClass = player.is_on_court 
-        ? "bg-orange-50 border-l-4 border-orange-500" 
-        : "bg-white";
+        ? "bg-orange-50/60 border-l-4 border-orange-500" 
+        : "bg-white opacity-80";
 
     return (
         <tr className={`border-b hover:bg-gray-50 transition-colors ${rowClass}`}>
@@ -34,29 +28,29 @@ const PlayerRow = ({ player, onAction }) => {
                 </div>
             </td>
 
-            {/* ACCIONES (Ajusta los nombres de las acciones según tu backend) */}
+            {/* ACCIONES */}
             <td className="p-4">
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-1.5 justify-center">
                     <button 
                         onClick={() => onAction(player.id_game_player, 'FREE_THROW_MADE')}
                         className="px-2 py-1 bg-gray-100 hover:bg-green-500 hover:text-white rounded text-[10px] font-bold transition-colors"
                     >
-                        1PT
+                        +1 TL
                     </button>
                     <button 
-                        onClick={() => onAction(player.id_game_player, '2pt')}
+                        onClick={() => onAction(player.id_game_player, '2PT_MADE')}
                         className="px-2 py-1 bg-gray-100 hover:bg-green-600 hover:text-white rounded text-[10px] font-bold transition-colors"
                     >
-                        2PT
+                        +2 PTS
                     </button>
                     <button 
-                        onClick={() => onAction(player.id_game_player, '3pt')}
+                        onClick={() => onAction(player.id_game_player, '3PT_MADE')}
                         className="px-2 py-1 bg-gray-100 hover:bg-green-700 hover:text-white rounded text-[10px] font-bold transition-colors"
                     >
-                        3PT
+                        +3 PTS
                     </button>
                     <button 
-                        onClick={() => onAction(player.id_game_player, 'foul')}
+                        onClick={() => onAction(player.id_game_player, 'FOUL')}
                         className="px-2 py-1 bg-gray-100 hover:bg-red-600 hover:text-white rounded text-[10px] font-bold transition-colors"
                     >
                         F

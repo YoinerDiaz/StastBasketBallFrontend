@@ -1,27 +1,22 @@
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 
-export default function ActionWidget({ title, icon, path, colorClass, description }){
-return(
-        <Link
+export default function ActionWidget({ title, icon, path, description, accentColor }) {
+  return (
+    <Link
       to={path}
-      className={`
-        group relative overflow-hidden rounded-[2rem] p-6 h-40
-        bg-white border border-gray-100 shadow-sm
-        hover:shadow-xl hover:border-[#f2743a]/20 hover:-translate-y-1
-        transition-all duration-300 flex flex-col justify-between
-      `}
+      className="group relative flex h-44 flex-col justify-between overflow-hidden rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm transition duration-300 hover:-translate-y-1 hover:border-green-200 hover:shadow-xl"
     >
-      <div className={`w-11 h-11 rounded-2xl flex items-center justify-center text-xl transition-colors ${colorClass}`}>
+      <div className={`flex h-12 w-12 items-center justify-center rounded-2xl transition group-hover:scale-110 ${accentColor}`}>
         {icon}
       </div>
       <div>
-        <h4 className="text-gray-800 font-bold text-sm mb-1">{title}</h4>
-        <p className="text-xs text-gray-400">{description}</p>
-        <div className="flex items-center text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity p-1">
-          Ir ahora <ArrowRight className="ml-1 w-3 h-3" />
+        <h4 className="text-base font-black text-gray-900">{title}</h4>
+        <p className="mt-1 text-sm text-gray-500">{description}</p>
+        <div className="mt-3 flex items-center text-[10px] font-black uppercase tracking-widest text-green-600 opacity-0 transition group-hover:opacity-100">
+          Ir ahora <ArrowRight className="ml-1 h-3 w-3" />
         </div>
       </div>
     </Link>
-);
-} 
+  );
+}
